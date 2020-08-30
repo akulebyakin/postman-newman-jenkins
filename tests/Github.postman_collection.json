@@ -1,0 +1,296 @@
+{
+	"info": {
+		"_postman_id": "dc3c2ea2-1b87-4c8a-aaef-fc771c985b7b",
+		"name": "Github",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Github - create repo",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "8fe15060-d356-4b2a-a122-6c3b85f4f56e",
+						"exec": [
+							"var random = Math.random().toString(36).substring(2);\r",
+							"var repositoryName = \"My-repository-\"+ random;\r",
+							"\r",
+							"pm.environment.set(\"repositoryName\", repositoryName);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "bca2c4a1-bb17-4150-b32e-afc0340cf05c",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"var repoName = pm.environment.get(\"repositoryName\");\r",
+							"\r",
+							"pm.test(\"Test repo name\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.name).to.eql(repoName);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"{{repositoryName}}\",\r\n    \"description\": \"This is your first repository\",\r\n    \"homepage\": \"https://github.com\",\r\n    \"private\": false,\r\n    \"has_issues\": true,\r\n    \"has_projects\": true,\r\n    \"has_wiki\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/user/repos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"user",
+						"repos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Github - list user repos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f39ea2bf-6f3a-4e5a-86a3-c30159b856b6",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/users/:username/repos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"users",
+						":username",
+						"repos"
+					],
+					"variable": [
+						{
+							"key": "username",
+							"value": "{{owner}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Github - create an issue",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "809ed2d3-65c1-4ebc-9365-f44f111b2199",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Label name is 'bug'\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.labels[0].name).to.eql(\"bug\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Found a bug\",\r\n    \"body\": \"I'm having a problem with this.\",\r\n    \"assignees\": [\r\n        \"akulebyakin\"\r\n    ],\r\n    \"labels\": [\r\n        \"bug\"\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/repos/:owner/:repo/issues",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo",
+						"issues"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"value": "{{repositoryName}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Github - delete repo",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1e37ef94-9c3a-4b90-ad96-fc6df77afdf3",
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/repos/:owner/:repo",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"value": "{{repositoryName}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Github - check repo after delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "413b7f0a-20d9-4a65-8719-29a0cacf6f04",
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/repos/:owner/:repo",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"repos",
+						":owner",
+						":repo"
+					],
+					"variable": [
+						{
+							"key": "owner",
+							"value": "{{owner}}"
+						},
+						{
+							"key": "repo",
+							"value": "{{repositoryName}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "d4c6d7f5-9036-41dc-8559-925a181478e6",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "81fa0a85-0bba-411c-9ba1-c2e9aeb5da21",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
